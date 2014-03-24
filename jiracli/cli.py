@@ -33,7 +33,7 @@ def get_text_from_editor(def_text):
     open(tmp, "w").write(def_text)
     editor = os.environ.setdefault("EDITOR","vim")
     os.system("%s %s" % (editor, tmp))
-    return "\n".join([k for k in open(tmp).read().split("\n") if not k.startswith("--")])
+    return "\n".join([k for k in open(tmp).readlines() if not k.startswith("--")])
 
 
 def setup_home_dir():
@@ -243,11 +243,11 @@ def get_comments ( jira_id ):
 def add_comment( jira_id, comment ):
     if comment == default_editor_text:
         comment = get_text_from_editor(default_editor_text % ("comment"))
-    res = jiraobj.service.addComment( token, jira_id, comment )
-    if res:
-        return "%s added to %s" % (comment, jira_id)
-    else:
-        return "failed to add comment to %s" % jira_id
+    comment = comment.strip()
+    rc = jiraobj.factory.create("tns1:RemoteComment")
+    rc.body = comment
+    res = jiraobj.service.addComment( token, jira_id, rc )
+    return "%s added to %s" % (comment, jira_id)
 
 def create_issue ( project, type=0, summary="", description="" , priority="Major"):
     if description == default_editor_text:
